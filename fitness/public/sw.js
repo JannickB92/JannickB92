@@ -1,10 +1,10 @@
 // Service worker: app shell offline-first, exercise images cached on first view, API always network.
-const VERSION = 'fit-v1.0.0';
+const VERSION = 'fit-v1.1.0';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css', 'data/exercises.json',
   'js/app.js', 'js/ui.js', 'js/api.js', 'js/store.js', 'js/generator.js', 'js/timer.js', 'js/chart.js', 'js/components.js',
   'js/views/auth.js', 'js/views/home.js', 'js/views/builder.js', 'js/views/workout.js', 'js/views/templates.js',
-  'js/views/results.js', 'js/views/library.js', 'js/views/body.js', 'js/views/settings.js',
+  'js/views/results.js', 'js/views/stats.js', 'js/views/analysis.js', 'js/views/library.js', 'js/views/body.js', 'js/views/settings.js',
   'icons/icon-192.png',
 ];
 

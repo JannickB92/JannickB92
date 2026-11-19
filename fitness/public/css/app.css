@@ -398,3 +398,31 @@ body.auth { display: grid; place-items: center; min-height: 100vh; }
 }
 .workout-head h1 { font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .workout-head .grow { min-width: 0; }
+
+/* ---------- statistics & analysis ---------- */
+.chart .line.faint { stroke-width: 1.2; opacity: .35; }
+.chart.with-trend .dot { r: 2.5; opacity: .6; }
+.chart .line.trend { stroke-width: 3.5; }
+.chart .col { fill: var(--muted); opacity: .5; }
+.chart .col.ok { fill: var(--accent); opacity: 1; }
+.chart .target-line { stroke: var(--text); stroke-dasharray: 4 4; opacity: .35; }
+.legend { display: flex; gap: 1rem; font-size: .8rem; color: var(--muted); margin-top: .25rem; }
+.legend span::before { content: ""; display: inline-block; width: 14px; height: 3px; border-radius: 2px; background: var(--accent); vertical-align: middle; margin-right: .35rem; }
+.legend span.faint::before { opacity: .35; height: 2px; }
+.delta { font-size: .8rem; font-weight: 600; }
+.delta.up { color: var(--accent); }
+.delta.down { color: var(--danger); }
+.delta.neutral { color: var(--muted); }
+.strength-row { display: grid; grid-template-columns: 1fr auto auto; gap: .75rem; align-items: center; padding: .55rem 0; border-bottom: 1px solid var(--border); color: inherit; }
+.strength-row:last-child { border-bottom: 0; }
+.focus-row { display: flex; gap: .6rem; align-items: flex-start; padding: .35rem 0; }
+.focus-row p { margin: 0; }
+.prio { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font-size: .8rem; font-weight: 700; flex: none; background: var(--surface-2); }
+.prio.p1 { background: var(--accent); color: var(--accent-ink); }
+.prio.p2 { background: var(--accent-soft); color: var(--accent); }
+.analysis ul { padding-left: 1.2rem; margin: .25rem 0; }
+.steps { padding-left: 1.2rem; }
+.steps li { margin: .4rem 0; }
+.prompt-box { font-family: ui-monospace, monospace; font-size: .8rem; margin-top: .5rem; }
+.ok-text { color: var(--accent); display: flex; align-items: center; gap: .3rem; }
+.section-title { margin: 1.5rem 0 .25rem; font-size: 1.15rem; }

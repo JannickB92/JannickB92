@@ -23,6 +23,16 @@ Draait op gewone **shared hosting** (PHP + SQLite), **zonder afhankelijkheden**:
   - Kalender van trainingsdagen, weken op rij.
   - Sets per spiergroep per week, met richtlijn.
 - **Lichaam:** gewicht en taille bijhouden met grafiek, plus **privé voortgangsfoto's** met een vergelijking naast elkaar.
+- **AI-analyse van je foto's, zonder API-sleutel:**
+  1. De app maakt een prompt met een vast JSON-antwoordformaat, aangevuld met je gegevens en je vorige analyse.
+  2. Je deelt foto's en prompt met een AI-app naar keuze.
+  3. Je plakt het antwoord terug in de app.
+  4. De app controleert het streng en gebruikt de aandachtspunten als "extra aandacht" in de trainingsgenerator.
+- **Statistieken:**
+  - gewicht met trendlijn (gemiddelde over 7 dagen) en verandering per week;
+  - taille en BMI;
+  - trainingen en volume per week, krachtontwikkeling per oefening en sets per spiergroep;
+  - kies de periode: 4 weken, 3 maanden, een jaar of alles.
 - **Offline:** een training gaat door zonder bereik. Wordt hij offline afgerond, dan synchroniseert hij vanzelf zodra je weer online bent.
 - **Export:** al je data als JSON of CSV.
 
@@ -53,6 +63,16 @@ Benodigd: PHP 8.0 of hoger met `pdo_sqlite` (bijna altijd standaard aan) en Apac
 **Kun je de document root niet kiezen?** Zet dan de inhoud van `public/` in de map van het subdomein, en `app/` één niveau hoger. Pas het pad in `public/api/index.php` aan als dat nodig is.
 
 **Instellingen aanpassen (optioneel):** kopieer `app/config.sample.php` naar `app/config.php`. Daar stel je bijvoorbeeld een andere datamap of sessieduur in.
+
+### Automatisch live zetten met GitHub Actions (optioneel)
+
+`.github/workflows/deploy-fitness.yml` uploadt de app via FTPS naar je hosting. `app/data` (database en foto's) en `app/config.php` worden nooit overschreven.
+
+1. Zet bij GitHub onder **Settings → Secrets and variables → Actions** deze gegevens:
+   - **Secrets:** `FTP_SERVER`, `FTP_USERNAME` en `FTP_PASSWORD`.
+   - **Variabele `FTP_APP_DIR`:** de map vanaf de FTP-root, bijvoorbeeld `fitness/`.
+2. Voer de workflow uit via **Actions → Deploy fitness app → Run workflow**. Een handmatig te starten workflow is pas zichtbaar als hij op de standaardbranch staat.
+3. Wil je dat elke push naar `main` automatisch live gaat? Zet dan de variabele `FITNESS_DEPLOY` op `true`.
 
 ### Back-up
 

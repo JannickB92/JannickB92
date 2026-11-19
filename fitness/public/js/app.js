@@ -11,9 +11,10 @@ import { templatesView } from './views/templates.js';
 import { resultsView, workoutDetailView, exerciseView } from './views/results.js';
 import { libraryView } from './views/library.js';
 import { bodyView } from './views/body.js';
+import { analysisView } from './views/analysis.js';
 import { settingsView } from './views/settings.js';
 
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '1.1.0';
 
 const ROUTES = [
   [/^#?\/?$/, homeView, 'home'],
@@ -26,13 +27,14 @@ const ROUTES = [
   [/^#\/exercise\/(?<id>[\w-]+)$/, exerciseView, 'results'],
   [/^#\/library$/, libraryView, 'more'],
   [/^#\/body$/, bodyView, 'body'],
+  [/^#\/analysis$/, analysisView, 'body'],
   [/^#\/settings$/, settingsView, 'more'],
 ];
 
 const NAV = [
   ['home', '#/', 'home', 'Vandaag'],
   ['train', '#/train', 'list', 'Trainingen'],
-  ['results', '#/results', 'chart', 'Resultaten'],
+  ['results', '#/results', 'chart', 'Statistieken'],
   ['body', '#/body', 'body', 'Lichaam'],
   ['more', '#/settings', 'more', 'Meer'],
 ];

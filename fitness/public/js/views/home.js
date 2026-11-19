@@ -1,13 +1,13 @@
 // "Vandaag": continue / planned workouts / generate a new one.
 import { h, chips, icon, sheet, fmtDate, fmtDuration, todayStr, toast, mount } from '../ui.js';
-import { S, GOALS, EQUIPMENT, MUSCLES, saveSettings, weekStreak, startOfWeek } from '../store.js';
+import { S, GOALS, EQUIPMENT, MUSCLES, saveSettings, weekStreak, startOfWeek, suggestedFocusMuscle } from '../store.js';
 import { generate, resolveFocus, FOCUS_LABELS, withLinks } from '../generator.js';
 import { go } from '../app.js';
 import { statTile } from '../components.js';
 
 export function homeView(root) {
   const st = S.settings;
-  const opts = { goal: st.goal, minutes: st.minutes, focus: st.focus || 'auto', extraMuscle: '' };
+  const opts = { goal: st.goal, minutes: st.minutes, focus: st.focus || 'auto', extraMuscle: suggestedFocusMuscle() };
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Goedemorgen' : hour < 18 ? 'Goedemiddag' : 'Goedenavond';
 
@@ -34,7 +34,8 @@ export function homeView(root) {
     h('label.field', h('span.label', 'Extra aandacht voor (optioneel)'),
       h('select', { onchange: (e) => (opts.extraMuscle = e.target.value) },
         h('option', { value: '' }, '—'),
-        Object.entries(MUSCLES).filter(([k]) => !['conditie', 'heupen'].includes(k)).map(([k, v]) => h('option', { value: k }, v)))),
+        Object.entries(MUSCLES).filter(([k]) => !['conditie', 'heupen'].includes(k)).map(([k, v]) => h('option', { value: k, selected: k === opts.extraMuscle }, v + ((S.settings.focusMuscles || []).includes(k) ? ' ✨' : ''))))),
+    S.settings.focusMuscles?.length ? h('p.small.muted', '✨ = aandachtspunt uit je AI-analyse. De app kiest steeds degene die deze week het minst getraind is.') : null,
     h('button.linkish', { type: 'button', onclick: () => equipmentSheet(renderEquip) }, icon('dumbbell'), ' Materiaal: ', equipSummary),
     h('button.btn.block.big', {
       type: 'button',

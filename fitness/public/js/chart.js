@@ -1,8 +1,11 @@
 // Tiny SVG charts (no library). Colors come from CSS variables so light/dark both work.
 import { s, h, fmtDate } from './ui.js';
 
-/** Line chart. points: [{x: unixSeconds, y: number}] */
-export function lineChart(points, { height = 180, unit = '', yLabel = '' } = {}) {
+/**
+ * Line chart. points: [{x: unixSeconds, y: number}]
+ * trend: optional second series (e.g. moving average), drawn as a smooth bold line; points become faint dots.
+ */
+export function lineChart(points, { height = 180, unit = '', yLabel = '', trend = null } = {}) {
   if (points.length < 2) {
     return h('div.chart-empty', points.length ? 'Nog maar één meting: na de volgende zie je hier een grafiek.' : 'Nog geen gegevens.');
   }
@@ -30,6 +33,11 @@ export function lineChart(points, { height = 180, unit = '', yLabel = '' } = {})
     s('text', { x: pad.l, y: H - 6, class: 'axis' }, fmtDate(x0, false)),
     s('text', { x: W - pad.r, y: H - 6, 'text-anchor': 'end', class: 'axis' }, fmtDate(x1, false)),
   ];
+  if (trend && trend.length > 1) {
+    const td = trend.map((p, i) => (i ? 'L' : 'M') + X(p.x).toFixed(1) + ' ' + Y(p.y).toFixed(1)).join(' ');
+    return s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart with-trend', role: 'img', 'aria-label': yLabel },
+      grid, s('path', { d, class: 'line faint' }), dots, s('path', { d: td, class: 'line trend' }), labels);
+  }
   return s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart', role: 'img', 'aria-label': yLabel },
     grid, s('path', { d: area, class: 'area' }), s('path', { d, class: 'line' }), dots, labels);
 }
@@ -85,4 +93,32 @@ function niceTicks(min, max, count) {
 
 function fmtTick(v) {
   return String(Math.round(v * 10) / 10).replace('.', ',');
+}
+
+/** Vertical columns, e.g. per week. rows: [{label, value, title?}] */
+export function columnChart(rows, { height = 140, unit = '', target } = {}) {
+  const W = 600, H = height, pad = { l: 8, r: 8, t: 18, b: 22 };
+  const max = Math.max(1, target || 0, ...rows.map((r) => r.value));
+  const bw = (W - pad.l - pad.r) / rows.length;
+  const Y = (v) => H - pad.b - (v / max) * (H - pad.t - pad.b);
+  const cols = rows.map((r, i) => {
+    const x = pad.l + i * bw + bw * 0.15;
+    const y = Y(r.value);
+    return [
+      s('rect', { x, y, width: bw * 0.7, height: Math.max(0, H - pad.b - y), rx: 4, class: 'col' + (target && r.value >= target ? ' ok' : '') },
+        s('title', {}, `${r.title || r.label}: ${fmtTick(r.value)}${unit}`)),
+      r.value ? s('text', { x: x + bw * 0.35, y: y - 4, 'text-anchor': 'middle', class: 'axis' }, fmtTick(r.value)) : null,
+      i % Math.ceil(rows.length / 6) === 0 ? s('text', { x: x + bw * 0.35, y: H - 6, 'text-anchor': 'middle', class: 'axis' }, r.label) : null,
+    ];
+  });
+  const tline = target ? s('line', { x1: pad.l, x2: W - pad.r, y1: Y(target), y2: Y(target), class: 'target-line' }) : null;
+  return s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart', role: 'img' }, tline, cols);
+}
+
+/** Time-weighted moving average over `days` (handles irregular measurements). */
+export function movingAverage(points, days = 7) {
+  return points.map((p) => {
+    const win = points.filter((q) => q.x <= p.x && q.x > p.x - days * 86400);
+    return { x: p.x, y: Math.round((win.reduce((t, q) => t + q.y, 0) / win.length) * 10) / 10 };
+  });
 }

@@ -27,6 +27,8 @@ final class Api
         'POST custom/delete' => 'customDelete',
         'POST body/save' => 'bodySave',
         'POST body/delete' => 'bodyDelete',
+        'POST analyses/save' => 'analysisSave',
+        'POST analyses/delete' => 'analysisDelete',
         'POST photos/upload' => 'photoUpload',
         'POST photos/delete' => 'photoDelete',
         'GET photos/file' => 'photoFile',
@@ -190,6 +192,8 @@ final class Api
             'custom' => $custom,
             'body' => $body,
             'photos' => $photos,
+            'analyses' => array_map(fn ($r) => ['id' => (int) $r['id'], 'date' => $r['date']] + (json_decode($r['data'], true) ?: []),
+                Db::all('SELECT * FROM analyses WHERE user_id = ? ORDER BY date, id', [$uid])),
             'server_time' => time(),
         ];
     }
@@ -408,6 +412,34 @@ final class Api
              ON CONFLICT(user_id, date) DO UPDATE SET weight=excluded.weight, waist=excluded.waist, notes=excluded.notes',
             [$u['id'], $date, self::num(Http::input('weight'), 20, 400), self::num(Http::input('waist'), 30, 250), substr((string) Http::input('notes', ''), 0, 1000)]
         );
+        return ['ok' => true];
+    }
+
+    /** Stores a (client-validated) AI analysis. Only size and shape are checked here; it is rendered as text only. */
+    private static function analysisSave(): array
+    {
+        $u = Auth::requireUser();
+        $a = Http::input('analysis');
+        if (!is_array($a)) {
+            throw new HttpError(422, 'invalid_analysis');
+        }
+        $date = (string) ($a['date'] ?? '');
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $date = date('Y-m-d');
+        }
+        unset($a['id'], $a['date']);
+        $json = json_encode($a, JSON_UNESCAPED_UNICODE);
+        if (strlen($json) > 20000) {
+            throw new HttpError(413, 'too_large');
+        }
+        $id = Db::insert('INSERT INTO analyses (user_id, date, data, created_at) VALUES (?,?,?,?)', [$u['id'], $date, $json, time()]);
+        return ['id' => $id];
+    }
+
+    private static function analysisDelete(): array
+    {
+        $u = Auth::requireUser();
+        Db::exec('DELETE FROM analyses WHERE id = ? AND user_id = ?', [self::int(Http::input('id'), 1, PHP_INT_MAX), $u['id']]);
         return ['ok' => true];
     }
 

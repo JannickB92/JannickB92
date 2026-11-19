@@ -34,6 +34,8 @@ export const DEFAULT_SETTINGS = {
   cooldown: true,
   barWeight: 20,
   plates: [25, 20, 15, 10, 5, 2.5, 1.25],
+  height: null, // cm, for BMI
+  focusMuscles: [], // from the latest AI analysis, used by the generator
 };
 
 export const S = {
@@ -46,6 +48,7 @@ export const S = {
   custom: [],
   body: [],
   photos: [],
+  analyses: [],
   offline: false,
   active: null,
   draft: null,
@@ -86,6 +89,7 @@ export function applySync(data) {
   S.custom = data.custom || [];
   S.body = data.body || [];
   S.photos = data.photos || [];
+  S.analyses = data.analyses || [];
   indexCatalog();
   mergePending();
   try {
@@ -284,4 +288,12 @@ export function setsPerMuscle(days = 7) {
     }
   }
   return out;
+}
+
+/** Muscle from the AI focus list that got the fewest hard sets in the last 7 days (rotates naturally). */
+export function suggestedFocusMuscle() {
+  const list = S.settings.focusMuscles || [];
+  if (!list.length) return '';
+  const done = setsPerMuscle(7);
+  return [...list].sort((a, b) => (done[a] || 0) - (done[b] || 0))[0];
 }

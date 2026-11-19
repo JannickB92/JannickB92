@@ -1,6 +1,6 @@
 // Body: weight / waist log and private progress photos (with side-by-side comparison).
-import { h, icon, iconBtn, chips, sheet, toast, fmtDate, fmtKg, todayStr, parseNum, confirmDialog, empty, mount } from '../ui.js';
-import { S } from '../store.js';
+import { h, icon, iconBtn, chips, sheet, toast, fmtDate, fmtKg, todayStr, parseNum, confirmDialog, empty, mount, stepper } from '../ui.js';
+import { S, MUSCLES, saveSettings } from '../store.js';
 import { api, errorMessage } from '../api.js';
 import { lineChart } from '../chart.js';
 import { refresh } from '../app.js';
@@ -57,7 +57,7 @@ export function bodyView(root) {
   mount(root, 
     h('header.page-head', h('h1', 'Lichaam')),
     h('section.card',
-      h('h2', 'Meting'),
+      h('div.row.between', h('h2', 'Meting'), h('a.small', { href: '#/results' }, 'Statistieken →')),
       h('div.grid-3',
         h('label.field', h('span', 'Datum'), date),
         h('label.field', h('span', 'Gewicht (kg)'), weight),
@@ -75,6 +75,16 @@ export function bodyView(root) {
           } catch (e) { toast(errorMessage(e), 'error'); }
         },
       }, 'Opslaan')),
+    h('section.card.compact',
+      h('div.field-row', h('span', 'Lengte (voor BMI)'),
+        stepper(S.settings.height || 180, { min: 120, max: 230, fmt: (v) => v + ' cm', onChange: (v) => saveSettings({ height: v }).catch(() => {}) }))),
+    h('a.card.list-row', { href: '#/analysis' },
+      h('div',
+        h('strong', '✨ AI-analyse van je foto\'s'),
+        h('span.muted', S.analyses.length
+          ? `Laatste: ${fmtDate(S.analyses[S.analyses.length - 1].date)} · focus: ${(S.settings.focusMuscles || []).map((m) => MUSCLES[m]).join(', ') || '—'}`
+          : 'Laat een AI je sterke punten en aandachtspunten bepalen')),
+      icon('back', 'flip')),
     S.body.length ? h('section.card',
       h('h2', 'Verloop'),
       chips([['weight', 'Gewicht'], ['waist', 'Taille']], metric, (v) => { metric = v; renderChart(); }),

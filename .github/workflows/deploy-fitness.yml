@@ -1,0 +1,53 @@
+# Deploys the fitness app to shared hosting over FTPS.
+#
+# One-time setup (GitHub → repository → Settings → Secrets and variables → Actions):
+#   Secrets:   FTP_SERVER    e.g. ftp.jouwdomein.nl
+#              FTP_USERNAME  your FTP account
+#              FTP_PASSWORD  its password
+#   Variables: FTP_APP_DIR   folder for the app, relative to the FTP root, ending in '/'  (e.g. fitness/)
+#              FITNESS_DEPLOY  set to 'true' to enable automatic deploys on push to main
+#
+# The subdomain's document root must point to <FTP_APP_DIR>public.
+# Your database and photos (app/data) and app/config.php are never uploaded, overwritten or deleted.
+name: Deploy fitness app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['fitness/**']
+
+concurrency: deploy-fitness
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || vars.FITNESS_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check PHP syntax
+        run: for f in $(find fitness/app fitness/public -name '*.php'); do php -l "$f"; done
+
+      - name: Upload app code (outside web root)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: fitness/app/
+          server-dir: ${{ vars.FTP_APP_DIR }}app/
+          exclude: |
+            data/**
+            config.php
+
+      - name: Upload public files (web root)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: fitness/public/
+          server-dir: ${{ vars.FTP_APP_DIR }}public/

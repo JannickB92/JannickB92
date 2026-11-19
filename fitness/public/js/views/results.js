@@ -6,11 +6,14 @@ import { statTile, exAnimation, exMeta } from '../components.js';
 import { api, errorMessage } from '../api.js';
 import { refresh, go } from '../app.js';
 import { FOCUS_LABELS } from '../generator.js';
+import { statsDashboard } from './stats.js';
 
 export function resultsView(root) {
   const ws = S.workouts;
   if (!ws.length) {
-    mount(root, h('header.page-head', h('h1', 'Resultaten')), empty('Nog geen trainingen. Na je eerste training zie je hier je voortgang.', h('a.btn', { href: '#/' }, 'Start een training')));
+    const wrap = h('div');
+    mount(root, h('header.page-head', h('h1', 'Statistieken')), wrap);
+    statsDashboard(wrap);
     return;
   }
   const weekStart = startOfWeek().getTime() / 1000;
@@ -37,17 +40,7 @@ export function resultsView(root) {
   const body = h('div');
   const renderTab = () => {
     if (tab === 'overzicht') {
-      mount(body, 
-        h('div.stat-row',
-          statTile('Deze week', thisWeek.length, Math.round(minutes) + ' min'),
-          statTile('Weken op rij', weekStreak()),
-          statTile('Volume week', Math.round(vol).toLocaleString('nl-NL'), 'kg'),
-          statTile('Totaal', ws.length, 'trainingen')),
-        h('section.card', h('h2', 'Trainingsdagen'), heatmap(counts, 16)),
-        h('section.card',
-          h('h2', 'Sets per spiergroep (7 dagen)'),
-          h('p.small.muted', 'Richtlijn voor spiergroei: ongeveer 10 harde sets per spiergroep per week (streepje). Hulpspieren tellen voor een halve set.'),
-          barList(muscleRows, { target: [10, 20], max: 20 })));
+      statsDashboard(body);
     } else if (tab === 'records') {
       mount(body, h('div.cards', exIds.map((id) => {
         const ex = exercise(id);
@@ -69,7 +62,7 @@ export function resultsView(root) {
   };
 
   mount(root, 
-    h('header.page-head', h('h1', 'Resultaten')),
+    h('header.page-head', h('h1', 'Statistieken')),
     chips([['overzicht', 'Overzicht'], ['records', 'Records'], ['geschiedenis', 'Geschiedenis']], tab, (v) => { tab = v; renderTab(); }),
     body);
   renderTab();

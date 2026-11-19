@@ -183,6 +183,17 @@ final class Db
                 created_at INTEGER NOT NULL
             );
             SQL,
+            // 2: AI body analyses (result of the photo prompt, pasted back by the user)
+            <<<SQL
+            CREATE TABLE analyses (
+                id INTEGER PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                date TEXT NOT NULL,
+                data TEXT NOT NULL,
+                created_at INTEGER NOT NULL
+            );
+            CREATE INDEX idx_analyses_user ON analyses(user_id, date);
+            SQL,
         ];
     }
 }
