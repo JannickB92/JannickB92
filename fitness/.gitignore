@@ -1,0 +1,5 @@
+# Private data: database, sessions and progress photos never go into git
+app/data/*
+!app/data/.gitkeep
+app/config.php
+!app/data/.htaccess

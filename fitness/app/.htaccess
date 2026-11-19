@@ -1,0 +1,3 @@
+# Application code and data: never serve over HTTP.
+Require all denied
+Deny from all
